@@ -1,0 +1,124 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: order-service
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/tinyshop_order?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: dev
+
+  shardingsphere:
+    datasource:
+      names: ds0, ds1
+      ds0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://127.0.0.1:3306/tinyshop_order_0?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: 123456
+      ds1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://127.0.0.1:3306/tinyshop_order_1?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: 123456
+    rules:
+      sharding:
+        tables:
+          t_order:
+            actual-data-nodes: ds${0..1}.t_order_${0..15}
+            table-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: order-table-inline
+            database-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: order-db-inline
+          t_order_item:
+            actual-data-nodes: ds${0..1}.t_order_item_${0..15}
+            table-strategy:
+              standard:
+                sharding-column: order_id
+                sharding-algorithm-name: order-item-table-inline
+            database-strategy:
+              standard:
+                sharding-column: order_id
+                sharding-algorithm-name: order-item-db-inline
+        sharding-algorithms:
+          order-db-inline:
+            type: INLINE
+            props:
+              algorithm-expression: ds${user_id % 2}
+          order-table-inline:
+            type: INLINE
+            props:
+              algorithm-expression: t_order_${user_id % 16}
+          order-item-db-inline:
+            type: INLINE
+            props:
+              algorithm-expression: ds${order_id % 2}
+          order-item-table-inline:
+            type: INLINE
+            props:
+              algorithm-expression: t_order_item_${order_id % 16}
+    props:
+      sql-show: true
+
+# MyBatis Plus
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: input
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+# Seata 分布式事务配置
+seata:
+  enabled: true
+  application-id: ${spring.application.name}
+  tx-service-group: tinyshop_tx_group
+  service:
+    vgroup-mapping:
+      tinyshop_tx_group: default
+  registry:
+    type: nacos
+    nacos:
+      server-addr: 127.0.0.1:8848
+      namespace: dev
+      group: SEATA_GROUP
+  client:
+    rm:
+      async-commit-buffer-limit: 10000
+
+# 日志
+logging:
+  level:
+    com.tinyshop.order: debug
+    org.apache.shardingsphere: debug

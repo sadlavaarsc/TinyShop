@@ -1,40 +1,25 @@
 package com.tinyshop.user.service;
 
+import com.tinyshop.common.utils.JwtUtil;
 import com.tinyshop.user.entity.User;
+import com.tinyshop.user.mapper.UserMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-/**
- * 用户 Service 接口
- *
- * @author TinyShop Team
- */
-public interface UserService {
+@Service
+public class UserService {
+    @Autowired
+    private UserMapper userMapper;
 
-    /**
-     * 用户注册
-     *
-     * @param username 用户名
-     * @param password 密码
-     * @param phone    手机号
-     * @return 用户ID
-     */
-    Long register(String username, String password, String phone);
+    public boolean register(User user) {
+        return userMapper.insert(user) > 0;
+    }
 
-    /**
-     * 用户登录
-     *
-     * @param username 用户名
-     * @param password 密码
-     * @return JWT Token
-     */
-    String login(String username, String password);
-
-    /**
-     * 根据ID查询用户
-     */
-    User getById(Long userId);
-
-    /**
-     * 根据用户名查询用户
-     */
-    User getByUsername(String username);
+    public String login(String username, String password) {
+        User user = userMapper.selectByUsername(username);
+        if (user != null && user.getPassword().equals(password)) {
+            return JwtUtil.generateToken(user.getId());
+        }
+        return null;
+    }
 }

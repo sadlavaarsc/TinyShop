@@ -1,0 +1,35 @@
+# TinyShop
+
+高并发电商系统，基于 Spring Boot + Spring Cloud Gateway 构建。
+
+## 架构
+
+```
+┌─────────────┐
+│   Gateway   │  Spring Cloud Gateway 路由、鉴权
+└──────┬──────┘
+       │
+   ┌───┴───┬─────────┬─────────┬─────────┐
+   ▼       ▼         ▼         ▼         ▼
+┌──────┐┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐
+│ User ││Product│ │Order │ │Seckill│ │ Pay  │
+└──────┘└──────┘ └──────┘ └──────┘ └──────┘
+```
+
+## 核心特性
+
+- **秒杀链路**: Sentinel 令牌桶限流 + Redis Lua 原子扣减 + RocketMQ 异步下单 + MySQL 乐观锁
+- **分库分表**: ShardingSphere 按用户 ID 分片
+- **分布式事务**: Seata AT 模式
+- **稳定性**: Sentinel 热点限流 + 慢调用降级 + 熔断
+
+## 模块
+
+| 模块 | 端口 | 说明 |
+|------|------|------|
+| gateway | 8080 | 网关 |
+| user-service | 8081 | 用户 |
+| product-service | 8082 | 商品 |
+| order-service | 8083 | 订单 |
+| seckill-service | 8084 | 秒杀 |
+| pay-service | 8085 | 支付 |
