@@ -3,6 +3,7 @@ package com.tinyshop.pay.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -13,9 +14,11 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("t_pay_record")
-public class PayRecord {
+public class PayRecord implements Serializable {
 
-    @TableId(type = IdType.AUTO)
+    private static final long serialVersionUID = 1L;
+
+    @TableId(type = IdType.INPUT)
     private Long id;
 
     /** 订单ID */
@@ -27,14 +30,17 @@ public class PayRecord {
     /** 支付金额 */
     private BigDecimal amount;
 
-    /** 支付状态：0-待支付，1-支付成功，2-支付失败 */
+    /** 支付状态：0-支付中，1-已支付，2-支付失败 */
     private Integer status;
 
-    /** 第三方支付流水号 */
+    /** 支付渠道 */
+    private String payChannel;
+
+    /** 第三方流水号 */
     private String tradeNo;
 
-    /** 支付渠道：alipay/wechat */
-    private String channel;
+    /** 支付时间 */
+    private LocalDateTime payTime;
 
     /** 逻辑删除 */
     @TableLogic

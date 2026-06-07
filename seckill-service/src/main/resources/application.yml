@@ -1,16 +1,61 @@
 server:
   port: 8084
+
 spring:
   application:
     name: seckill-service
+
   datasource:
-    url: jdbc:mysql://localhost:3306/tinyshop_seckill?useUnicode=true&characterEncoding=utf-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/tinyshop_seckill?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: root
+    password: 123456
+
   redis:
-    host: localhost
+    host: 127.0.0.1
     port: 6379
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: dev
+
+# MyBatis Plus
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+# RocketMQ
 rocketmq:
-  name-server: localhost:9876
+  name-server: 127.0.0.1:9876
   producer:
     group: seckill-producer-group
+    send-message-timeout: 3000
+    retry-times-when-send-failed: 2
+
+# Sentinel
+sentinel:
+  transport:
+    dashboard: 127.0.0.1:8858
+    port: 8719
+
+# 日志
+logging:
+  level:
+    com.tinyshop.seckill: debug
