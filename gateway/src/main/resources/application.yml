@@ -1,0 +1,76 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: tinyshop-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # 用户服务路由
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=2
+
+        # 商品服务路由
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/api/product/**
+          filters:
+            - StripPrefix=2
+
+        # 订单服务路由
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - StripPrefix=2
+
+        # 秒杀服务路由
+        - id: seckill-service
+          uri: lb://seckill-service
+          predicates:
+            - Path=/api/seckill/**
+          filters:
+            - StripPrefix=2
+
+        # 支付服务路由
+        - id: pay-service
+          uri: lb://pay-service
+          predicates:
+            - Path=/api/pay/**
+          filters:
+            - StripPrefix=2
+
+    # Nacos 注册中心配置
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: dev
+
+    # Sentinel 配置
+    sentinel:
+      transport:
+        dashboard: 127.0.0.1:8088
+        port: 8719
+      datasource:
+        flow:
+          nacos:
+            server-addr: 127.0.0.1:8848
+            dataId: gateway-flow-rules
+            groupId: SENTINEL_GROUP
+            rule-type: flow
+
+# 日志配置
+logging:
+  level:
+    org.springframework.cloud.gateway: debug
